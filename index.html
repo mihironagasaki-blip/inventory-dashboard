@@ -236,7 +236,7 @@
     <div class="summary-grid" id="cards-tasco"></div>
     <div class="filter-bar">
       <label>アラート</label>
-      <select id="fAlert-tasco" onchange="renderTasco()">
+      <select id="fAlert-tasco" onchange="render()">
         <option value="">すべて</option>
         <option value="売り切れ">売り切れ</option>
         <option value="売り切れ疑い">売り切れ疑い</option>
@@ -246,8 +246,8 @@
         <option value="安全">安全</option>
       </select>
       <label>仕入先</label>
-      <select id="fVendor-tasco" onchange="renderTasco()"><option value="">すべて</option></select>
-      <input id="fQ-tasco" placeholder="SKU/商品名検索" oninput="renderTasco()">
+      <select id="fVendor-tasco" onchange="render()"><option value="">すべて</option></select>
+      <input id="fQ-tasco" placeholder="SKU/商品名検索" oninput="render()">
     </div>
     <div class="table-wrap"><table>
       <thead><tr><th>SKU</th><th style="min-width:160px">商品名 / 仕入先</th><th>手持ち</th><th>90日販売</th><th>日次平均</th><th>変動係数</th><th>直近14日</th><th>発注点</th><th>残日数</th><th>アラート</th></tr></thead>
@@ -259,8 +259,8 @@
     <div class="summary-grid" id="cards-drop"></div>
     <div class="filter-bar">
       <label>サプライヤー</label>
-      <select id="fVendor-drop" onchange="renderDrop()"><option value="">すべて</option></select>
-      <input id="fQ-drop" placeholder="SKU/商品名検索" oninput="renderDrop()">
+      <select id="fVendor-drop" onchange="render()"><option value="">すべて</option></select>
+      <input id="fQ-drop" placeholder="SKU/商品名検索" oninput="render()">
     </div>
     <div class="table-wrap"><table>
       <thead><tr><th>SKU</th><th style="min-width:160px">商品名 / サプライヤー</th><th>Shopify在庫</th><th>90日販売</th><th>直近14日</th><th>アラート</th><th>推奨対応</th></tr></thead>
@@ -282,28 +282,42 @@ function loadCSV(input, type) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    const text = e.target.result;
-    const rows = parseCSV(text);
-    state[type] = rows;
-    const labels = { sales: ['status1','card1'], daily: ['status2','card2'], inventory: ['status3','card3'] };
-    const [sid, cid] = labels[type];
-    document.getElementById(sid).textContent = `✓ ${file.name}`;
-    document.getElementById(cid).classList.add('loaded');
-    document.getElementById('lastUpdated').textContent = `更新: ${new Date().toLocaleString('ja-JP')}`;
-    if (state.sales && state.inventory) buildData();
+    try {
+      const text = e.target.result;
+      const rows = parseCSV(text);
+      state[type] = rows;
+      console.log(`${type} loaded: ${rows.length} rows`);
+      const labels = { sales: ['status1','card1'], daily: ['status2','card2'], inventory: ['status3','card3'] };
+      const [sid, cid] = labels[type];
+      document.getElementById(sid).textContent = `✓ ${file.name}`;
+      document.getElementById(cid).classList.add('loaded');
+      document.getElementById('lastUpdated').textContent = `更新: ${new Date().toLocaleString('ja-JP')}`;
+      if (state.sales && state.daily && state.inventory) buildData();
+    } catch(err) {
+      console.error('Error loading CSV:', err);
+      alert('CSVの読み込みに失敗しました: ' + err.message);
+    }
   };
   reader.readAsText(file, 'UTF-8');
 }
 
 function parseCSV(text) {
   const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
-  return lines.slice(1).map(line => {
-    const vals = line.split(',').map(v => v.replace(/^"|"$/g,'').trim());
+  if (lines.length < 2) return [];
+  
+  const headers = lines[0].split(',').map(h => h.replace(/^\"|\"$/g, '').trim());
+  const rows = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const vals = lines[i].split(',').map(v => v.replace(/^\"|\"$/g, '').trim());
     const obj = {};
-    headers.forEach((h, i) => obj[h] = vals[i] || '');
-    return obj;
-  });
+    headers.forEach((h, idx) => {
+      obj[h] = vals[idx] || '';
+    });
+    rows.push(obj);
+  }
+  
+  return rows;
 }
 
 function buildData() {
@@ -313,7 +327,7 @@ function buildData() {
   const salesMap = {};
   (state.sales || []).forEach(r => {
     const sku = (r['Product variant SKU'] || '').trim();
-    if (!LIGHTING.some(p => sku.startsWith(p))) return;
+    if (!sku || !LIGHTING.some(p => sku.startsWith(p))) return;
     const qty = parseInt(r['Net items sold'] || '0') || 0;
     salesMap[sku] = { qty, name: (r['Product title'] || '').trim() };
   });
@@ -325,7 +339,7 @@ function buildData() {
     const sku = (r['Product variant SKU'] || '').trim();
     const day = (r['Day'] || '').trim();
     const qty = parseInt(r['Net items sold'] || '0') || 0;
-    if (!day) return;
+    if (!day || !sku) return;
     allDates.add(day);
     if (!dailyMap[sku]) dailyMap[sku] = {};
     dailyMap[sku][day] = (dailyMap[sku][day] || 0) + qty;
@@ -353,7 +367,7 @@ function buildData() {
     const sku = (r['Product variant SKU'] || '').trim();
     const vendor = (r['Product vendor'] || '').trim();
     const name = (r['Product title'] || '').trim();
-    if (['非掲載','廃盤','フロー確認'].some(x => name.includes(x))) return;
+    if (!sku || ['非掲載','廃盤','フロー確認'].some(x => name.includes(x))) return;
     const oh = parseInt(r['Ending inventory units'] || '0') || 0;
     if (!invMap[sku]) invMap[sku] = { oh: 0, vendor, name };
     else invMap[sku].oh += oh;
@@ -361,8 +375,8 @@ function buildData() {
     invMap[sku].name = invMap[sku].name || name;
   });
 
-  // 結合・計算
-  const allSkus = new Set([...Object.keys(salesMap), ...Object.keys(invMap).filter(k => LIGHTING.some(p => k.startsWith(p)))]);
+  // 結合
+  const allSkus = new Set([...Object.keys(salesMap), ...Object.keys(invMap)]);
   const results = [];
 
   allSkus.forEach(sku => {
@@ -371,7 +385,7 @@ function buildData() {
     const inv = invMap[sku] || { oh: null, vendor: '', name: '' };
     const oh = inv.oh;
     const qty = s.qty;
-    const name = s.name || inv.name;
+    const name = (s.name || inv.name).slice(0, 50);
     const vendor = inv.vendor;
     if (['非掲載','廃盤','フロー確認'].some(x => name.includes(x))) return;
 
@@ -393,7 +407,7 @@ function buildData() {
     else if (dl >= 0 && dl < LEAD * 1.5) alert = '要注意';
     else alert = '安全';
 
-    results.push({ sku, name: name.slice(0,45), vendor, category, oh, qty, avg, cv, rop, dl, alert, r14 });
+    results.push({ sku, name, vendor, category, oh, qty, avg, cv, rop, dl, alert, r14 });
   });
 
   const ao = {'売り切れ':0,'売り切れ疑い':1,'今すぐ発注':2,'要注意':3,'在庫未連携':4,'販売なし':5,'安全':6};
@@ -401,25 +415,17 @@ function buildData() {
   state.results = results;
 
   updateVendorOptions();
-  renderTasco();
-  renderDrop();
+  render();
 }
 
 function updateVendorOptions() {
-  const tVendors = [...new Set(state.results.filter(r=>r.category==='自社管理').map(r=>r.vendor))].sort();
-  const dVendors = [...new Set(state.results.filter(r=>r.category==='ドロップシッピング').map(r=>r.vendor))].sort();
-  const tvSel = document.getElementById('fVendor-tasco');
-  const dvSel = document.getElementById('fVendor-drop');
-  tvSel.innerHTML = '<option value="">すべて</option>' + tVendors.map(v=>`<option value="${v}">${v}</option>`).join('');
-  dvSel.innerHTML = '<option value="">すべて</option>' + dVendors.map(v=>`<option value="${v}">${v}</option>`).join('');
+  const tVendors = [...new Set(state.results.filter(r=>r.category==='自社管理').map(r=>r.vendor).filter(v=>v))].sort();
+  const dVendors = [...new Set(state.results.filter(r=>r.category==='ドロップシッピング').map(r=>r.vendor).filter(v=>v))].sort();
+  document.getElementById('fVendor-tasco').innerHTML = '<option value="">すべて</option>' + tVendors.map(v=>`<option value="${v}">${v}</option>`).join('');
+  document.getElementById('fVendor-drop').innerHTML = '<option value="">すべて</option>' + dVendors.map(v=>`<option value="${v}">${v}</option>`).join('');
 }
 
-const ao = {'売り切れ':0,'売り切れ疑い':1,'今すぐ発注':2,'要注意':3,'在庫未連携':4,'販売なし':5,'安全':6};
-const badgeClass = {
-  '売り切れ':'badge-danger','売り切れ疑い':'badge-warn2',
-  '今すぐ発注':'badge-warn','要注意':'badge-info',
-  '販売なし':'badge-purple','安全':'badge-ok','在庫未連携':'badge-purple'
-};
+const badgeClass = {'売り切れ':'badge-danger','売り切れ疑い':'badge-warn2','今すぐ発注':'badge-warn','要注意':'badge-info','販売なし':'badge-purple','安全':'badge-ok','在庫未連携':'badge-purple'};
 
 function dlHtml(dl, oh) {
   if (oh !== null && oh < 0) return `<span class="text-danger">${oh}（過剰受注）</span>`;
@@ -427,83 +433,46 @@ function dlHtml(dl, oh) {
   if (dl === 0) return '<span class="text-danger">売切</span>';
   if (dl < 90) return `<span class="text-danger">${dl}日</span>`;
   if (dl < 135) return `<span class="text-warn">${dl}日</span>`;
-  if (dl > 365) return `<span class="text-ok">${dl}日</span>`;
   return `${dl}日`;
 }
+
 function cvHtml(cv) {
   if (!cv) return '—';
   if (cv >= 3) return `<span class="text-danger">${cv}</span>`;
   if (cv >= 2) return `<span class="text-warn">${cv}</span>`;
   return cv;
 }
+
 function makeCards(data, id) {
   const cnts = {};
   ['売り切れ','売り切れ疑い','今すぐ発注','要注意','販売なし','安全'].forEach(k => cnts[k] = data.filter(r=>r.alert===k).length);
   const colors = {'売り切れ':'var(--danger)','売り切れ疑い':'#9B2626','今すぐ発注':'var(--warn)','要注意':'var(--info)','販売なし':'var(--purple)','安全':'var(--ok)'};
-  document.getElementById(id).innerHTML = `
-    <div class="summary-card"><div class="summary-card-label">総SKU数</div><div class="summary-card-val">${data.length}</div></div>
-    ${['売り切れ','売り切れ疑い','今すぐ発注','要注意','安全'].map(k=>`
-    <div class="summary-card"><div class="summary-card-label" style="color:${colors[k]}">${k}</div><div class="summary-card-val" style="color:${colors[k]}">${cnts[k]}</div></div>
-    `).join('')}
-  `;
+  document.getElementById(id).innerHTML = `<div class="summary-card"><div class="summary-card-label">総SKU数</div><div class="summary-card-val">${data.length}</div></div>${['売り切れ','売り切れ疑い','今すぐ発注','要注意','安全'].map(k=>`<div class="summary-card"><div class="summary-card-label" style="color:${colors[k]}">${k}</div><div class="summary-card-val" style="color:${colors[k]}">${cnts[k]}</div></div>`).join('')}`;
 }
 
-function renderTasco() {
+function render() {
+  if (!state.results.length) return;
+
+  const tascoBase = state.results.filter(r => r.category === '自社管理');
+  const dropBase = state.results.filter(r => r.category === 'ドロップシッピング');
+
+  // 自社管理
   const al = document.getElementById('fAlert-tasco').value;
   const v = document.getElementById('fVendor-tasco').value;
   const q = document.getElementById('fQ-tasco').value.toLowerCase();
-  const base = state.results.filter(r => r.category === '自社管理');
-  makeCards(base, 'cards-tasco');
-  const f = base.filter(r => {
-    if (al && r.alert !== al) return false;
-    if (v && r.vendor !== v) return false;
-    if (q && !r.sku.toLowerCase().includes(q) && !r.name.toLowerCase().includes(q)) return false;
-    return true;
-  });
-  if (!f.length) { document.getElementById('tbody-tasco').innerHTML = '<tr><td colspan="10"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">データがありません</div><div class="empty-desc">CSVをアップロードするかフィルターを変更してください</div></div></td></tr>'; return; }
-  document.getElementById('tbody-tasco').innerHTML = f.map(r => `<tr>
-    <td class="td-sku">${r.sku}</td>
-    <td class="td-name" title="${r.name}">${r.name}<span class="td-vendor">${r.vendor}</span></td>
-    <td class="td-num">${r.oh !== null ? r.oh : '—'}</td>
-    <td class="td-num">${r.qty}</td>
-    <td class="td-num">${r.avg.toFixed(2)}</td>
-    <td class="td-num">${cvHtml(r.cv)}</td>
-    <td class="td-num" style="${r.r14===0&&r.qty>=5?'color:var(--danger);font-weight:700':''}">${r.r14>=0?r.r14:'—'}</td>
-    <td class="td-num">${r.rop||'—'}</td>
-    <td class="td-num">${dlHtml(r.dl, r.oh)}</td>
-    <td><span class="badge ${badgeClass[r.alert]}">${r.alert}</span></td>
-  </tr>`).join('');
-}
+  makeCards(tascoBase, 'cards-tasco');
+  const tascoRows = tascoBase.filter(r => (!al || r.alert === al) && (!v || r.vendor === v) && (!q || r.sku.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)));
+  document.getElementById('tbody-tasco').innerHTML = tascoRows.map(r => `<tr><td class="td-sku">${r.sku}</td><td class="td-name" title="${r.name}">${r.name}<span class="td-vendor">${r.vendor}</span></td><td class="td-num">${r.oh !== null ? r.oh : '—'}</td><td class="td-num">${r.qty}</td><td class="td-num">${r.avg.toFixed(2)}</td><td class="td-num">${cvHtml(r.cv)}</td><td class="td-num">${r.r14>=0?r.r14:'—'}</td><td class="td-num">${r.rop||'—'}</td><td class="td-num">${dlHtml(r.dl, r.oh)}</td><td><span class="badge ${badgeClass[r.alert]}">${r.alert}</span></td></tr>`).join('') || '<tr><td colspan="10"><div class="empty">データなし</div></td></tr>';
 
-function renderDrop() {
-  const v = document.getElementById('fVendor-drop').value;
-  const q = document.getElementById('fQ-drop').value.toLowerCase();
-  const base = state.results.filter(r => r.category === 'ドロップシッピング');
-  const neg = base.filter(r => r.oh !== null && r.oh < 0).length;
-  document.getElementById('cards-drop').innerHTML = `
-    <div class="summary-card"><div class="summary-card-label">DS SKU数</div><div class="summary-card-val">${base.length}</div></div>
-    <div class="summary-card"><div class="summary-card-label" style="color:var(--danger)">売り切れ</div><div class="summary-card-val" style="color:var(--danger)">${base.filter(r=>r.alert==='売り切れ').length}</div></div>
-    <div class="summary-card"><div class="summary-card-label" style="color:var(--danger)">マイナス在庫</div><div class="summary-card-val" style="color:var(--danger)">${neg}</div></div>
-    <div class="summary-card"><div class="summary-card-label">販売なし</div><div class="summary-card-val">${base.filter(r=>r.alert==='販売なし').length}</div></div>
-  `;
-  const f = base.filter(r => {
-    if (v && r.vendor !== v) return false;
-    if (q && !r.sku.toLowerCase().includes(q) && !r.name.toLowerCase().includes(q)) return false;
-    return true;
-  }).sort((a,b) => (a.oh||0)-(b.oh||0));
-  if (!f.length) { document.getElementById('tbody-drop').innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">データがありません</div></div></td></tr>'; return; }
-  document.getElementById('tbody-drop').innerHTML = f.map(r => {
-    const action = r.oh < 0 ? 'サプライヤーへ在庫確認・販売停止検討' : r.oh === 0 ? '在庫確認 / 販売停止を検討' : '取り扱い継続を確認';
-    return `<tr>
-      <td class="td-sku">${r.sku}</td>
-      <td class="td-name" title="${r.name}">${r.name}<span class="td-vendor">${r.vendor}</span></td>
-      <td class="td-num" style="${r.oh<0?'color:var(--danger);font-weight:700':''}">${r.oh !== null ? r.oh : '—'}</td>
-      <td class="td-num">${r.qty}</td>
-      <td class="td-num" style="${r.r14===0&&r.qty>=5?'color:var(--danger);font-weight:700':''}">${r.r14>=0?r.r14:'—'}</td>
-      <td><span class="badge ${badgeClass[r.alert]}">${r.alert}</span></td>
-      <td class="action-cell" title="${action}">${action}</td>
-    </tr>`;
-  }).join('');
+  // ドロップシッピング
+  const v2 = document.getElementById('fVendor-drop').value;
+  const q2 = document.getElementById('fQ-drop').value.toLowerCase();
+  makeCards(dropBase, 'cards-drop');
+  const dropRows = dropBase.filter(r => (!v2 || r.vendor === v2) && (!q2 || r.sku.toLowerCase().includes(q2) || r.name.toLowerCase().includes(q2))).sort((a,b) => (a.oh||0)-(b.oh||0));
+  document.getElementById('tbody-drop').innerHTML = dropRows.map(r => {
+    const action = r.oh < 0 ? 'サプライヤーへ在庫確認' : r.oh === 0 ? '販売停止を検討' : '確認';
+    return `<tr><td class="td-sku">${r.sku}</td><td class="td-name" title="${r.name}">${r.name}<span class="td-vendor">${r.vendor}</span></td><td class="td-num">${r.oh !== null ? r.oh : '—'}</td><td class="td-num">${r.qty}</td><td class="td-num">${r.r14>=0?r.r14:'—'}</td><td><span class="badge ${badgeClass[r.alert]}">${r.alert}</span></td><td class="action-cell">${action}</td></tr>`;
+  }).join('') || '<tr><td colspan="7"><div class="empty">データなし</div></td></tr>';
 }
 
 function showTab(id, btn) {
