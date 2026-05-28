@@ -6,727 +6,460 @@
     <title>在庫管理ダッシュボード</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
-
         :root {
-            --bg: #F7F6F3;
-            --surface: #FFFFFF;
-            --surface2: #F0EDE8;
-            --border: #E2DDDB;
-            --text: #1A1714;
-            --text2: #6B6560;
-            --text3: #9E9890;
-            --accent: #1A1714;
-            --danger: #C0392B;
-            --danger-bg: #FDECEA;
-            --warn: #D35400;
-            --warn-bg: #FDF4E8;
-            --success: #27AE60;
-            --success-bg: #E8F8F5;
+            --bg: #F7F6F3; --surface: #FFFFFF; --surface2: #F0EDE8;
+            --border: #E2DDDB; --text: #1A1714; --text2: #6B6560;
+            --text3: #9E9890; --accent: #1A1714; --danger: #C0392B;
+            --danger-bg: #FDECEA; --warn: #D35400; --warn-bg: #FDF4E8;
+            --success: #27AE60; --success-bg: #E8F8F5;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: var(--text2);
-            font-size: 14px;
-        }
-
-        .upload-section {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 30px;
-        }
-
-        .upload-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .upload-box {
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .upload-box:hover {
-            border-color: var(--accent);
-            background-color: var(--surface2);
-        }
-
-        .upload-box input {
-            display: none;
-        }
-
-        .upload-label {
-            display: block;
-            cursor: pointer;
-        }
-
-        .upload-title {
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .upload-desc {
-            font-size: 12px;
-            color: var(--text2);
-            margin-bottom: 12px;
-        }
-
-        .upload-status {
-            font-size: 12px;
-            margin-top: 8px;
-            min-height: 20px;
-        }
-
-        .status-ok {
-            color: var(--success);
-            font-weight: 600;
-        }
-
-        .status-error {
-            color: var(--danger);
-            font-weight: 600;
-        }
-
-        .dashboard {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 30px;
-        }
-
-        .dashboard h2 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .control-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        label {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        select, input[type="text"] {
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-family: 'Noto Sans JP', sans-serif;
-            font-size: 14px;
-            background-color: var(--surface);
-            color: var(--text);
-        }
-
-        select:focus, input[type="text"]:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(26, 23, 20, 0.1);
-        }
-
-        button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            font-family: 'Noto Sans JP', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background-color: var(--accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        .btn-secondary {
-            background-color: var(--surface2);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--border);
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th {
-            background-color: var(--surface2);
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        tr:hover {
-            background-color: var(--surface2);
-        }
-
-        .alert-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .alert-danger {
-            background-color: var(--danger-bg);
-            color: var(--danger);
-        }
-
-        .alert-warn {
-            background-color: var(--warn-bg);
-            color: var(--warn);
-        }
-
-        .alert-success {
-            background-color: var(--success-bg);
-            color: var(--success);
-        }
-
-        .alert-default {
-            background-color: var(--surface2);
-            color: var(--text2);
-        }
-
-        .number {
-            font-family: 'DM Mono', monospace;
-            text-align: right;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background-color: var(--surface2);
-            padding: 16px;
-            border-radius: 6px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text2);
-            margin-bottom: 4px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            font-family: 'DM Mono', monospace;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text2);
-        }
-
-        .empty-state p {
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 24px;
-            }
-
-            .upload-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .controls {
-                flex-direction: column;
-            }
-
-            .control-group {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            th, td {
-                padding: 8px;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header { margin-bottom: 40px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text2); font-size: 14px; }
+        .upload-section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 30px; }
+        .upload-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .upload-box { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-box:hover { border-color: var(--accent); background-color: var(--surface2); }
+        .upload-box input { display: none; }
+        .upload-label { display: block; cursor: pointer; }
+        .upload-title { font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+        .upload-desc { font-size: 12px; color: var(--text2); margin-bottom: 12px; }
+        .upload-status { font-size: 12px; margin-top: 8px; min-height: 20px; }
+        .status-ok { color: var(--success); font-weight: 600; }
+        .status-error { color: var(--danger); font-weight: 600; }
+        .dashboard { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 30px; }
+        .dashboard h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+        .controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .control-group { display: flex; gap: 8px; align-items: center; }
+        label { font-size: 14px; font-weight: 500; color: var(--text); }
+        select, input[type="text"] { padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; background-color: var(--surface); color: var(--text); }
+        select:focus, input[type="text"]:focus { outline: none; border-color: var(--accent); }
+        button { padding: 8px 16px; border: none; border-radius: 4px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--accent); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { background-color: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background-color: var(--border); }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background-color: var(--surface2); padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid var(--border); }
+        tr:hover { background-color: var(--surface2); }
+        .alert-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+        .alert-danger { background-color: var(--danger-bg); color: var(--danger); }
+        .alert-warn { background-color: var(--warn-bg); color: var(--warn); }
+        .alert-success { background-color: var(--success-bg); color: var(--success); }
+        .alert-default { background-color: var(--surface2); color: var(--text2); }
+        .number { font-family: 'DM Mono', monospace; text-align: right; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background-color: var(--surface2); padding: 16px; border-radius: 6px; border-left: 4px solid var(--accent); }
+        .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+        .stat-value { font-size: 24px; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>在庫管理ダッシュボード</h1>
-            <p class="subtitle">Shopify在庫パトロール・自動管理</p>
-        </header>
+<div class="container">
+    <header>
+        <h1>在庫管理ダッシュボード</h1>
+        <p class="subtitle">Shopify在庫パトロール・自動管理</p>
+    </header>
 
-        <div class="upload-section">
-            <h2 style="margin-bottom: 20px;">CSVデータをアップロード</h2>
-            <div class="upload-grid">
-                <div class="upload-box">
-                    <label class="upload-label">
-                        <div class="upload-title">① 90日間販売数レポート</div>
-                        <div class="upload-desc">過去90日の販売データ</div>
-                        <input type="file" id="salesFile" accept=".csv" />
-                        <button class="btn-primary">ファイルを選択</button>
-                        <div class="upload-status" id="salesStatus"></div>
-                    </label>
-                </div>
-
-                <div class="upload-box">
-                    <label class="upload-label">
-                        <div class="upload-title">② 日別販売レポート</div>
-                        <div class="upload-desc">日ごとの販売データ</div>
-                        <input type="file" id="dailyFile" accept=".csv" />
-                        <button class="btn-primary">ファイルを選択</button>
-                        <div class="upload-status" id="dailyStatus"></div>
-                    </label>
-                </div>
-
-                <div class="upload-box">
-                    <label class="upload-label">
-                        <div class="upload-title">③ 在庫数レポート</div>
-                        <div class="upload-desc">現在の在庫データ</div>
-                        <input type="file" id="inventoryFile" accept=".csv" />
-                        <button class="btn-primary">ファイルを選択</button>
-                        <div class="upload-status" id="inventoryStatus"></div>
-                    </label>
-                </div>
+    <div class="upload-section">
+        <h2 style="margin-bottom: 20px;">CSVデータをアップロード</h2>
+        <div class="upload-grid">
+            <div class="upload-box">
+                <label class="upload-label">
+                    <div class="upload-title">① 90日間販売数レポート</div>
+                    <div class="upload-desc">過去90日の販売データ</div>
+                    <input type="file" id="salesFile" accept=".csv" />
+                    <button class="btn-primary">ファイルを選択</button>
+                    <div class="upload-status" id="salesStatus"></div>
+                </label>
             </div>
-        </div>
-
-        <div class="dashboard" id="dashboardSection" style="display: none;">
-            <h2>ダッシュボード</h2>
-
-            <div class="stats" id="statsContainer"></div>
-
-            <div class="controls">
-                <div class="control-group">
-                    <label for="vendorFilter">ベンダー:</label>
-                    <select id="vendorFilter">
-                        <option value="">全て</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="alertFilter">アラート:</label>
-                    <select id="alertFilter">
-                        <option value="">全て</option>
-                        <option value="売り切れ">売り切れ</option>
-                        <option value="今すぐ発注">今すぐ発注</option>
-                        <option value="要注意">要注意</option>
-                        <option value="販売なし">販売なし</option>
-                        <option value="安全">安全</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="searchBox">検索:</label>
-                    <input type="text" id="searchBox" placeholder="SKU or 商品名で検索" />
-                </div>
-                <button class="btn-secondary" onclick="resetFilters()">リセット</button>
+            <div class="upload-box">
+                <label class="upload-label">
+                    <div class="upload-title">② 日別販売レポート</div>
+                    <div class="upload-desc">日ごとの販売データ</div>
+                    <input type="file" id="dailyFile" accept=".csv" />
+                    <button class="btn-primary">ファイルを選択</button>
+                    <div class="upload-status" id="dailyStatus"></div>
+                </label>
             </div>
-
-            <div class="table-wrapper">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>SKU</th>
-                            <th>商品名</th>
-                            <th>バリエーション</th>
-                            <th>ベンダー</th>
-                            <th style="text-align: right;">現在在庫</th>
-                            <th style="text-align: right;">90日販売</th>
-                            <th style="text-align: right;">直近14日</th>
-                            <th style="text-align: right;">日次平均</th>
-                            <th style="text-align: right;">変動係数</th>
-                            <th style="text-align: right;">残日数</th>
-                            <th style="text-align: right;">ROP</th>
-                            <th>アラート</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <p>データが見つかりません</p>
+            <div class="upload-box">
+                <label class="upload-label">
+                    <div class="upload-title">③ 在庫数レポート</div>
+                    <div class="upload-desc">現在の在庫データ</div>
+                    <input type="file" id="inventoryFile" accept=".csv" />
+                    <button class="btn-primary">ファイルを選択</button>
+                    <div class="upload-status" id="inventoryStatus"></div>
+                </label>
             </div>
         </div>
     </div>
 
-    <script>
-        // データストレージ
-        let salesData = [];
-        let dailyData = [];
-        let inventoryData = [];
-        let mergedData = [];
+    <div class="dashboard" id="dashboardSection" style="display: none;">
+        <h2>ダッシュボード</h2>
+        <div class="stats" id="statsContainer"></div>
+        <div class="controls">
+            <div class="control-group">
+                <label for="vendorFilter">ベンダー:</label>
+                <select id="vendorFilter"><option value="">全て</option></select>
+            </div>
+            <div class="control-group">
+                <label for="alertFilter">アラート:</label>
+                <select id="alertFilter">
+                    <option value="">全て</option>
+                    <option value="売り切れ">売り切れ</option>
+                    <option value="売り切れ疑い">売り切れ疑い</option>
+                    <option value="今すぐ発注">今すぐ発注</option>
+                    <option value="要注意">要注意</option>
+                    <option value="販売なし">販売なし</option>
+                    <option value="安全">安全</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="searchBox">検索:</label>
+                <input type="text" id="searchBox" placeholder="SKU or 商品名で検索" />
+            </div>
+            <button class="btn-secondary" onclick="resetFilters()">リセット</button>
+        </div>
+        <div class="table-wrapper">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>商品名</th>
+                        <th>バリエーション</th>
+                        <th>ベンダー</th>
+                        <th style="text-align:right;">現在在庫</th>
+                        <th style="text-align:right;">90日販売</th>
+                        <th style="text-align:right;">直近14日</th>
+                        <th style="text-align:right;">日次平均</th>
+                        <th style="text-align:right;">変動係数</th>
+                        <th style="text-align:right;">残日数</th>
+                        <th style="text-align:right;">ROP</th>
+                        <th>アラート</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <div id="emptyState" class="empty-state" style="display:none;"><p>データが見つかりません</p></div>
+    </div>
+</div>
 
-        // CSV解析関数
-        function parseCSV(text) {
-            const lines = text.split('\n');
-            if (lines.length < 2) return [];
-            
-            const headers = lines[0].split(',').map(h => h.trim());
-            const rows = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                
-                const values = lines[i].split(',').map(v => v.trim());
-                const row = {};
-                
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
-                
-                rows.push(row);
+<script>
+    let salesData = [], dailyData = [], inventoryData = [], mergedData = [];
+
+    // ダブルクォーテーション対応のCSV解析関数
+    function parseCSV(text) {
+        // BOM除去
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+        const rows = [];
+        const lines = [];
+        let current = '';
+        let inQuotes = false;
+
+        // 文字単位で解析してカンマ内のカンマに対応
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            if (ch === '"') {
+                inQuotes = !inQuotes;
+            } else if (ch === '\n' && !inQuotes) {
+                lines.push(current);
+                current = '';
+            } else if (ch === '\r' && !inQuotes) {
+                // Windows改行対応（\r\n）
+            } else {
+                current += ch;
             }
-            
-            return rows;
+        }
+        if (current.trim()) lines.push(current);
+
+        if (lines.length < 2) return [];
+
+        const headers = splitCSVLine(lines[0]);
+
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const values = splitCSVLine(lines[i]);
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = values[index] !== undefined ? values[index] : '';
+            });
+            rows.push(row);
         }
 
-        // ファイルアップロードハンドラ
-        document.getElementById('salesFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    salesData = parseCSV(event.target.result);
-                    console.log('sales loaded:', salesData.length, 'rows');
-                    document.getElementById('salesStatus').innerHTML = '<span class="status-ok">✓ 読み込み完了</span>';
-                    updateDashboard();
-                } catch (error) {
-                    document.getElementById('salesStatus').innerHTML = '<span class="status-error">✗ エラー</span>';
-                    console.error('Sales parse error:', error);
-                }
-            };
-            reader.readAsText(file);
-        });
+        return rows;
+    }
 
-        document.getElementById('dailyFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    dailyData = parseCSV(event.target.result);
-                    console.log('daily loaded:', dailyData.length, 'rows');
-                    document.getElementById('dailyStatus').innerHTML = '<span class="status-ok">✓ 読み込み完了</span>';
-                    updateDashboard();
-                } catch (error) {
-                    document.getElementById('dailyStatus').innerHTML = '<span class="status-error">✗ エラー</span>';
-                    console.error('Daily parse error:', error);
-                }
-            };
-            reader.readAsText(file);
-        });
+    // 1行をカンマで分割（ダブルクォーテーション対応）
+    function splitCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
 
-        document.getElementById('inventoryFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    inventoryData = parseCSV(event.target.result);
-                    console.log('inventory loaded:', inventoryData.length, 'rows');
-                    document.getElementById('inventoryStatus').innerHTML = '<span class="status-ok">✓ 読み込み完了</span>';
-                    updateDashboard();
-                } catch (error) {
-                    document.getElementById('inventoryStatus').innerHTML = '<span class="status-error">✗ エラー</span>';
-                    console.error('Inventory parse error:', error);
-                }
-            };
-            reader.readAsText(file);
-        });
-
-        // データマージ・計算関数
-        function updateDashboard() {
-            if (salesData.length === 0 || inventoryData.length === 0) {
-                document.getElementById('dashboardSection').style.display = 'none';
-                return;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+                inQuotes = !inQuotes;
+            } else if (ch === ',' && !inQuotes) {
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += ch;
             }
+        }
+        result.push(current.trim());
+        return result;
+    }
 
-            mergedData = [];
+    // ファイルアップロードハンドラ
+    document.getElementById('salesFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                salesData = parseCSV(event.target.result);
+                console.log('sales loaded:', salesData.length, 'rows');
+                console.log('sales headers:', Object.keys(salesData[0] || {}));
+                document.getElementById('salesStatus').innerHTML = '<span class="status-ok">✓ 読み込み完了（' + salesData.length + '件）</span>';
+                updateDashboard();
+            } catch (error) {
+                document.getElementById('salesStatus').innerHTML = '<span class="status-error">✗ エラー</span>';
+                console.error('Sales parse error:', error);
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
 
-            inventoryData.forEach(inv => {
-                const sku = inv['商品のバリエーションSKU'] || inv['Product variant SKU'] || '';
-                const title = inv['商品名'] || inv['Product title'] || '';
-                const variation = inv['商品バリエーションの名前'] || inv['Product variant title'] || '';
-                const type = inv['商品タイプ'] || inv['Product type'] || '';
-                const vendor = inv['商品の販売元'] || inv['Product vendor'] || '';
-                const endingInventory = parseInt(inv['期末在庫数'] || inv['Ending inventory units'] || 0);
+    document.getElementById('dailyFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                dailyData = parseCSV(event.target.result);
+                console.log('daily loaded:', dailyData.length, 'rows');
+                console.log('daily headers:', Object.keys(dailyData[0] || {}));
+                document.getElementById('dailyStatus').innerHTML = '<span class="status-ok">✓ 読み込み完了（' + dailyData.length + '件）</span>';
+                updateDashboard();
+            } catch (error) {
+                document.getElementById('dailyStatus').innerHTML = '<span class="status-error">✗ エラー</span>';
+                console.error('Daily parse error:', error);
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
 
-                // 売上データ取得
-                const sales = salesData.find(s => (s['商品バリエーションのSKU'] || s['Product variant SKU'] || '').trim() === sku.trim());
-                const ninetyDaysSales = parseInt(sales ? (sales['純販売アイテム数'] || sales['Net items sold'] || 0) : 0);
+    document.getElementById('inventoryFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                inventoryData = parseCSV(event.target.result);
+                console.log('inventory loaded:', inventoryData.length, 'rows');
+                console.log('inventory headers:', Object.keys(inventoryData[0] || {}));
+                document.getElementById('inventoryStatus').innerHTML = '<span class="status-ok">✓ 読み込み完了（' + inventoryData.length + '件）</span>';
+                updateDashboard();
+            } catch (error) {
+                document.getElementById('inventoryStatus').innerHTML = '<span class="status-error">✗ エラー</span>';
+                console.error('Inventory parse error:', error);
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
 
-                // 直近14日の販売数を計算
-                const today = new Date();
-                const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
-                const last14DaysSales = dailyData.filter(d => {
+    function updateDashboard() {
+        if (salesData.length === 0 || inventoryData.length === 0) {
+            document.getElementById('dashboardSection').style.display = 'none';
+            return;
+        }
+
+        mergedData = [];
+
+        inventoryData.forEach(inv => {
+            const sku = (inv['商品のバリエーションSKU'] || inv['Product variant SKU'] || '').trim();
+            const title = (inv['商品名'] || inv['Product title'] || '').trim();
+            const variation = (inv['商品バリエーションの名前'] || inv['Product variant title'] || '').trim();
+            const type = (inv['商品タイプ'] || inv['Product type'] || '').trim();
+            const vendor = (inv['商品の販売元'] || inv['Product vendor'] || '').trim();
+            const endingInventory = parseInt(inv['期末在庫数'] || inv['Ending inventory units'] || 0) || 0;
+
+            const sales = salesData.find(s => (s['商品バリエーションのSKU'] || s['Product variant SKU'] || '').trim() === sku);
+            const ninetyDaysSales = parseInt(sales ? (sales['純販売アイテム数'] || sales['Net items sold'] || 0) : 0) || 0;
+
+            const today = new Date();
+            const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+            const last14DaysSales = dailyData
+                .filter(d => {
                     const dailySku = (d['商品バリエーションのSKU'] || d['Product variant SKU'] || '').trim();
-                    const dateStr = d['日'] || d['Day'] || '';
-                    if (dailySku !== sku.trim()) return false;
+                    const dateStr = (d['日'] || d['Day'] || '').trim();
+                    if (dailySku !== sku) return false;
                     const date = new Date(dateStr);
                     return date >= twoWeeksAgo && date <= today;
-                }).reduce((sum, d) => sum + parseInt(d['純販売アイテム数'] || d['Net items sold'] || 0), 0);
+                })
+                .reduce((sum, d) => sum + (parseInt(d['純販売アイテム数'] || d['Net items sold'] || 0) || 0), 0);
 
-                // 日別販売数から変動係数を計算
-                const skuDailyData = dailyData.filter(d => (d['商品バリエーションのSKU'] || d['Product variant SKU'] || '').trim() === sku.trim());
-                const dailySales = skuDailyData.map(d => parseInt(d['純販売アイテム数'] || d['Net items sold'] || 0));
-                
-                let stdDev = 0;
-                if (dailySales.length > 0) {
-                    const avg = dailySales.reduce((a, b) => a + b, 0) / dailySales.length;
-                    const variance = dailySales.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / dailySales.length;
-                    stdDev = Math.sqrt(variance);
-                }
+            const skuDailyData = dailyData.filter(d => (d['商品バリエーションのSKU'] || d['Product variant SKU'] || '').trim() === sku);
+            const dailySales = skuDailyData.map(d => parseInt(d['純販売アイテム数'] || d['Net items sold'] || 0) || 0);
 
-                const avgDailySales = ninetyDaysSales / 90;
-                const coefficientOfVariation = avgDailySales > 0 ? (stdDev / avgDailySales).toFixed(2) : 0;
-                const remainingDays = avgDailySales > 0 ? (endingInventory / avgDailySales).toFixed(0) : '∞';
-                const rop = (avgDailySales * 90 * 1.3).toFixed(0);
-
-                // アラート判定
-                let alert = '安全';
-                if (endingInventory <= 0 && ninetyDaysSales > 0) {
-                    alert = '売り切れ';
-                } else if (last14DaysSales === 0 && ninetyDaysSales >= 5) {
-                    alert = '売り切れ疑い';
-                } else if (remainingDays !== '∞' && remainingDays < 90) {
-                    alert = '今すぐ発注';
-                } else if (remainingDays !== '∞' && remainingDays >= 90 && remainingDays <= 135) {
-                    alert = '要注意';
-                } else if (ninetyDaysSales === 0) {
-                    alert = '販売なし';
-                }
-
-                mergedData.push({
-                    sku,
-                    title,
-                    variation,
-                    type,
-                    vendor,
-                    endingInventory,
-                    ninetyDaysSales,
-                    last14DaysSales,
-                    avgDailySales: avgDailySales.toFixed(2),
-                    coefficientOfVariation,
-                    remainingDays,
-                    rop,
-                    alert
-                });
-            });
-
-            populateFilters();
-            renderTable();
-            updateStats();
-            document.getElementById('dashboardSection').style.display = 'block';
-        }
-
-        // テーブル描画
-        function renderTable(filtered = null) {
-            const tbody = document.getElementById('tableBody');
-            const emptyState = document.getElementById('emptyState');
-            const data = filtered || mergedData;
-
-            tbody.innerHTML = '';
-
-            if (data.length === 0) {
-                emptyState.style.display = 'block';
-                return;
+            let stdDev = 0;
+            if (dailySales.length > 1) {
+                const avg = dailySales.reduce((a, b) => a + b, 0) / dailySales.length;
+                const variance = dailySales.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / dailySales.length;
+                stdDev = Math.sqrt(variance);
             }
 
-            emptyState.style.display = 'none';
+            const avgDailySales = ninetyDaysSales / 90;
+            const coefficientOfVariation = avgDailySales > 0 ? (stdDev / avgDailySales).toFixed(2) : '-';
+            const remainingDays = avgDailySales > 0 ? Math.floor(endingInventory / avgDailySales) : null;
+            const rop = Math.ceil(avgDailySales * 90 * 1.3);
 
-            data.forEach(row => {
-                const tr = document.createElement('tr');
-                let alertClass = 'alert-default';
-                
-                if (row.alert === '売り切れ' || row.alert === '売り切れ疑い') {
-                    alertClass = 'alert-danger';
-                } else if (row.alert === '今すぐ発注') {
-                    alertClass = 'alert-warn';
-                } else if (row.alert === '安全') {
-                    alertClass = 'alert-success';
-                }
+            let alertStatus = '安全';
+            if (endingInventory <= 0 && ninetyDaysSales > 0) {
+                alertStatus = '売り切れ';
+            } else if (last14DaysSales === 0 && ninetyDaysSales >= 5) {
+                alertStatus = '売り切れ疑い';
+            } else if (remainingDays !== null && remainingDays < 90) {
+                alertStatus = '今すぐ発注';
+            } else if (remainingDays !== null && remainingDays <= 135) {
+                alertStatus = '要注意';
+            } else if (ninetyDaysSales === 0) {
+                alertStatus = '販売なし';
+            }
 
-                tr.innerHTML = `
-                    <td><strong>${row.sku}</strong></td>
-                    <td>${row.title}</td>
-                    <td>${row.variation}</td>
-                    <td>${row.vendor}</td>
-                    <td class="number">${row.endingInventory}</td>
-                    <td class="number">${row.ninetyDaysSales}</td>
-                    <td class="number">${row.last14DaysSales}</td>
-                    <td class="number">${row.avgDailySales}</td>
-                    <td class="number">${row.coefficientOfVariation}</td>
-                    <td class="number">${row.remainingDays}</td>
-                    <td class="number">${row.rop}</td>
-                    <td><span class="alert-badge ${alertClass}">${row.alert}</span></td>
-                `;
-                tbody.appendChild(tr);
+            mergedData.push({
+                sku, title, variation, type, vendor,
+                endingInventory, ninetyDaysSales, last14DaysSales,
+                avgDailySales: avgDailySales.toFixed(2),
+                coefficientOfVariation,
+                remainingDays: remainingDays !== null ? remainingDays : '∞',
+                rop,
+                alert: alertStatus
             });
+        });
+
+        console.log('mergedData:', mergedData.length, '件');
+        if (mergedData.length > 0) console.log('サンプル:', mergedData[0]);
+
+        populateFilters();
+        renderTable();
+        updateStats();
+        document.getElementById('dashboardSection').style.display = 'block';
+    }
+
+    function renderTable(filtered = null) {
+        const tbody = document.getElementById('tableBody');
+        const emptyState = document.getElementById('emptyState');
+        const data = filtered !== null ? filtered : mergedData;
+
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            emptyState.style.display = 'block';
+            return;
         }
 
-        // フィルタリング関数
-        function applyFilters() {
-            const vendorFilter = document.getElementById('vendorFilter').value;
-            const alertFilter = document.getElementById('alertFilter').value;
-            const searchFilter = document.getElementById('searchBox').value.toLowerCase();
+        emptyState.style.display = 'none';
 
-            const filtered = mergedData.filter(row => {
-                const vendorMatch = !vendorFilter || row.vendor === vendorFilter;
-                const alertMatch = !alertFilter || row.alert === alertFilter;
-                const searchMatch = !searchFilter || 
-                    row.sku.toLowerCase().includes(searchFilter) || 
-                    row.title.toLowerCase().includes(searchFilter);
-                
-                return vendorMatch && alertMatch && searchMatch;
-            });
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            let alertClass = 'alert-default';
+            if (row.alert === '売り切れ' || row.alert === '売り切れ疑い') alertClass = 'alert-danger';
+            else if (row.alert === '今すぐ発注') alertClass = 'alert-warn';
+            else if (row.alert === '安全') alertClass = 'alert-success';
 
-            renderTable(filtered);
-        }
-
-        document.getElementById('vendorFilter').addEventListener('change', applyFilters);
-        document.getElementById('alertFilter').addEventListener('change', applyFilters);
-        document.getElementById('searchBox').addEventListener('input', applyFilters);
-
-        function resetFilters() {
-            document.getElementById('vendorFilter').value = '';
-            document.getElementById('alertFilter').value = '';
-            document.getElementById('searchBox').value = '';
-            renderTable();
-        }
-
-        // フィルタ項目を生成
-        function populateFilters() {
-            const vendors = [...new Set(mergedData.map(d => d.vendor))].sort();
-            const vendorSelect = document.getElementById('vendorFilter');
-            const currentValue = vendorSelect.value;
-
-            vendors.forEach(vendor => {
-                if (![...vendorSelect.options].some(opt => opt.value === vendor)) {
-                    const option = document.createElement('option');
-                    option.value = vendor;
-                    option.textContent = vendor;
-                    vendorSelect.appendChild(option);
-                }
-            });
-
-            vendorSelect.value = currentValue;
-        }
-
-        // 統計情報の表示
-        function updateStats() {
-            const statsContainer = document.getElementById('statsContainer');
-            const totalProducts = mergedData.length;
-            const alertCount = mergedData.filter(d => d.alert === '売り切れ' || d.alert === '売り切れ疑い' || d.alert === '今すぐ発注').length;
-            const selfManaged = mergedData.filter(d => d.vendor.includes('タスコ')).length;
-            const dropship = totalProducts - selfManaged;
-
-            statsContainer.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-label">管理中の商品</div>
-                    <div class="stat-value">${totalProducts}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">注文必要な商品</div>
-                    <div class="stat-value" style="color: var(--danger);">${alertCount}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">自社管理</div>
-                    <div class="stat-value">${selfManaged}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">ドロップシップ</div>
-                    <div class="stat-value">${dropship}</div>
-                </div>
+            tr.innerHTML = `
+                <td><strong>${row.sku}</strong></td>
+                <td>${row.title}</td>
+                <td>${row.variation}</td>
+                <td>${row.vendor}</td>
+                <td class="number">${row.endingInventory}</td>
+                <td class="number">${row.ninetyDaysSales}</td>
+                <td class="number">${row.last14DaysSales}</td>
+                <td class="number">${row.avgDailySales}</td>
+                <td class="number">${row.coefficientOfVariation}</td>
+                <td class="number">${row.remainingDays}</td>
+                <td class="number">${row.rop}</td>
+                <td><span class="alert-badge ${alertClass}">${row.alert}</span></td>
             `;
-        }
-    </script>
+            tbody.appendChild(tr);
+        });
+    }
+
+    function applyFilters() {
+        const vendorFilter = document.getElementById('vendorFilter').value;
+        const alertFilter = document.getElementById('alertFilter').value;
+        const searchFilter = document.getElementById('searchBox').value.toLowerCase();
+
+        const filtered = mergedData.filter(row => {
+            const vendorMatch = !vendorFilter || row.vendor === vendorFilter;
+            const alertMatch = !alertFilter || row.alert === alertFilter;
+            const searchMatch = !searchFilter ||
+                row.sku.toLowerCase().includes(searchFilter) ||
+                row.title.toLowerCase().includes(searchFilter);
+            return vendorMatch && alertMatch && searchMatch;
+        });
+
+        renderTable(filtered);
+    }
+
+    document.getElementById('vendorFilter').addEventListener('change', applyFilters);
+    document.getElementById('alertFilter').addEventListener('change', applyFilters);
+    document.getElementById('searchBox').addEventListener('input', applyFilters);
+
+    function resetFilters() {
+        document.getElementById('vendorFilter').value = '';
+        document.getElementById('alertFilter').value = '';
+        document.getElementById('searchBox').value = '';
+        renderTable();
+    }
+
+    function populateFilters() {
+        const vendors = [...new Set(mergedData.map(d => d.vendor))].filter(Boolean).sort();
+        const vendorSelect = document.getElementById('vendorFilter');
+        vendorSelect.innerHTML = '<option value="">全て</option>';
+        vendors.forEach(vendor => {
+            const option = document.createElement('option');
+            option.value = vendor;
+            option.textContent = vendor;
+            vendorSelect.appendChild(option);
+        });
+    }
+
+    function updateStats() {
+        const statsContainer = document.getElementById('statsContainer');
+        const totalProducts = mergedData.length;
+        const alertCount = mergedData.filter(d => ['売り切れ', '売り切れ疑い', '今すぐ発注'].includes(d.alert)).length;
+        const selfManaged = mergedData.filter(d => d.vendor.includes('タスコ')).length;
+        const dropship = totalProducts - selfManaged;
+
+        statsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-label">管理中の商品</div>
+                <div class="stat-value">${totalProducts}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">要対応の商品</div>
+                <div class="stat-value" style="color: var(--danger);">${alertCount}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">自社管理（タスコ）</div>
+                <div class="stat-value">${selfManaged}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">ドロップシップ</div>
+                <div class="stat-value">${dropship}</div>
+            </div>
+        `;
+    }
+</script>
 </body>
 </html>
